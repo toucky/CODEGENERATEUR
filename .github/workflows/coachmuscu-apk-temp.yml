@@ -29,15 +29,24 @@ jobs:
           test -f /tmp/coach-project/CoachMuscu/app/build.gradle
           test -f /tmp/coach-project/CoachMuscu/app/src/main/AndroidManifest.xml
 
-      - name: Apply verified resource fix
+      - name: Apply verified source fixes
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('/tmp/coach-project/CoachMuscu/app/src/main/res/values/strings.xml')
+          root = Path('/tmp/coach-project/CoachMuscu')
+          p = root / 'app/src/main/res/values/strings.xml'
           s = p.read_text(encoding='utf-8')
           s = s.replace("Rappels d'entraînement", "Rappels d\\'entraînement")
           p.write_text(s, encoding='utf-8')
+          for rel in [
+              'app/src/main/java/com/appmada/coachmuscu/MainActivity.java',
+              'app/src/main/java/com/appmada/coachmuscu/CalendarActivity.java',
+          ]:
+              j = root / rel
+              text = j.read_text(encoding='utf-8')
+              text = text.replace('StatsStore.currentStreak()', 'StatsStore.currentStreak(this)')
+              j.write_text(text, encoding='utf-8')
           PY
 
       - name: Set up Java 17
