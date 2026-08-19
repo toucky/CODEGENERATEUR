@@ -29,6 +29,17 @@ jobs:
           test -f /tmp/coach-project/CoachMuscu/app/build.gradle
           test -f /tmp/coach-project/CoachMuscu/app/src/main/AndroidManifest.xml
 
+      - name: Apply verified resource fix
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('/tmp/coach-project/CoachMuscu/app/src/main/res/values/strings.xml')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace("Rappels d'entraînement", "Rappels d\\'entraînement")
+          p.write_text(s, encoding='utf-8')
+          PY
+
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
