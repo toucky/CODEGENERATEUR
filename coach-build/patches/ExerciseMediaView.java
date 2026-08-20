@@ -18,6 +18,7 @@ public class ExerciseMediaView extends FrameLayout {
     private int[] frames = null;
     private int frameIndex = 0;
     private boolean paused = false;
+    private long frameDelayMs = 650;
 
     private final Runnable frameLoop = new Runnable() {
         @Override public void run() {
@@ -25,7 +26,7 @@ public class ExerciseMediaView extends FrameLayout {
                 frameIndex = (frameIndex + 1) % frames.length;
                 photo.setImageResource(frames[frameIndex]);
             }
-            handler.postDelayed(this, 650);
+            handler.postDelayed(this, frameDelayMs);
         }
     };
 
@@ -41,22 +42,36 @@ public class ExerciseMediaView extends FrameLayout {
         p.gravity = Gravity.CENTER;
         addView(photo, p);
         photo.setVisibility(GONE);
-        handler.postDelayed(frameLoop, 650);
+        handler.postDelayed(frameLoop, frameDelayMs);
     }
 
     public void setExercise(Exercise e) {
-        if (e != null && "pushup".equals(e.id)) {
+        if (e != null && "march".equals(e.id)) {
+            frames = new int[]{
+                    R.drawable.march_real_left,
+                    R.drawable.march_real_center,
+                    R.drawable.march_real_right,
+                    R.drawable.march_real_center
+            };
+            frameDelayMs = 360;
+            showRealFrames();
+        } else if (e != null && "pushup".equals(e.id)) {
             frames = new int[]{R.drawable.pushup_real_top, R.drawable.pushup_real_bottom, R.drawable.pushup_real_top};
-            frameIndex = 0;
-            photo.setImageResource(frames[0]);
-            photo.setVisibility(VISIBLE);
-            fallback.setVisibility(GONE);
+            frameDelayMs = 650;
+            showRealFrames();
         } else {
             frames = null;
             photo.setVisibility(GONE);
             fallback.setVisibility(VISIBLE);
             fallback.setExercise(e);
         }
+    }
+
+    private void showRealFrames() {
+        frameIndex = 0;
+        photo.setImageResource(frames[0]);
+        photo.setVisibility(VISIBLE);
+        fallback.setVisibility(GONE);
     }
 
     public void setPaused(boolean v) {
