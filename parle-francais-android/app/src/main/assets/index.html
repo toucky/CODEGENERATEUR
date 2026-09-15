@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Parle Français</title>
+<style>
+:root{
+ --bg:#f5f5f7;--card:rgba(255,255,255,.88);--text:#1d1d1f;--muted:#6e6e73;
+ --line:rgba(0,0,0,.08);--blue:#0071e3;--blue2:#4aa3ff;--mint:#eaf8f1;--lav:#f0ecff;
+ --peach:#fff0e7;--shadow:0 18px 50px rgba(0,0,0,.09)
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text)}
+body{background:radial-gradient(circle at 10% 0%,rgba(0,113,227,.14),transparent 34%),linear-gradient(180deg,#fbfbfd,var(--bg));padding:12px}
+body.dark{--bg:#101114;--card:rgba(29,30,34,.9);--text:#f5f5f7;--muted:#a1a1a6;--line:rgba(255,255,255,.1);--mint:#1d3429;--lav:#29243c;--peach:#3b2920;--shadow:0 18px 50px rgba(0,0,0,.35);background:radial-gradient(circle at 10% 0%,rgba(41,151,255,.16),transparent 34%),linear-gradient(180deg,#17181b,var(--bg))}
+.app{max-width:760px;margin:auto;padding-bottom:28px}
+.top{position:sticky;top:8px;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:22px;padding:10px 12px;box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:#111;color:white;font-weight:800}.brand b{display:block}.brand small{color:var(--muted)}
+.iconbtn{width:42px;height:42px;border:1px solid var(--line);border-radius:14px;background:var(--card);font-size:18px;color:var(--text)}
+.hero{padding:28px 6px 16px}.hero h1{font-size:42px;line-height:.98;letter-spacing:-.045em;margin:0 0 12px}.hero p{color:var(--muted);font-size:16px;line-height:1.5;margin:0}
+.modebanner{margin:8px 0 14px;padding:12px 14px;border-radius:17px;background:var(--peach);border:1px solid var(--line);font-size:12px;font-weight:750}.modebanner.on{background:var(--mint)}
+.card{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:26px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.title{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.choice{padding:13px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.46);color:var(--text);text-align:left}.dark .choice{background:rgba(255,255,255,.035)}.choice.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.09)}.choice b{display:block;font-size:14px;margin-bottom:4px}.choice span{display:block;font-size:11px;line-height:1.35;color:var(--muted)}
+label{display:block;color:var(--muted);font-size:12px;margin:12px 0 6px}select,input,textarea{width:100%;font:inherit;color:var(--text);background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:15px;padding:13px;outline:none}.dark select,.dark input,.dark textarea{background:#24252a}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.08)}
+.row{display:flex;gap:9px;align-items:center}.grow{flex:1}.btn{border:0;border-radius:16px;padding:13px 16px;font-weight:800;background:linear-gradient(180deg,var(--blue2),var(--blue));color:#fff;font-size:14px}.soft{background:#ececf1;color:#111}.dark .soft{background:#2b2d33;color:#fff}.black{background:#111;color:#fff}.dark .black{background:#f5f5f7;color:#111}
+.chips{display:flex;gap:8px;overflow:auto;padding-bottom:2px}.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:9px 11px;font-size:12px;font-weight:700}.chip.active{background:#111;color:#fff}.dark .chip.active{background:#f5f5f7;color:#111}
+.chat{min-height:330px;max-height:470px;overflow:auto;padding:4px 1px 8px}.msg{max-width:86%;padding:12px 14px;border-radius:19px;margin:8px 0;font-size:14px;line-height:1.46}.ai{background:#ededf1}.dark .ai{background:#2a2c31}.me{margin-left:auto;background:linear-gradient(180deg,#1979ef,var(--blue));color:white}.note{background:var(--peach);border:1px solid var(--line);color:var(--text)}
+.micwrap{text-align:center;border-top:1px solid var(--line);padding-top:14px}.mic{width:74px;height:74px;border-radius:50%;border:0;background:#111;color:#fff;font-size:28px;box-shadow:0 12px 26px rgba(0,0,0,.2)}.mic.listen{animation:pulse 1.2s infinite;background:#d7352b}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(215,53,43,.35)}70%{box-shadow:0 0 0 18px rgba(215,53,43,0)}100%{box-shadow:0 0 0 0 rgba(215,53,43,0)}}
+.hint{font-size:11px;color:var(--muted);margin:7px 0 13px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:12px;border-radius:16px;border:1px solid var(--line);text-align:center}.stat:nth-child(1){background:var(--lav)}.stat:nth-child(2){background:var(--mint)}.stat:nth-child(3){background:var(--peach)}.stat b{display:block;font-size:19px}.stat span{font-size:10px;color:var(--muted)}
+details{margin-top:12px;border-radius:16px;background:rgba(0,113,227,.07);padding:12px;border:1px solid rgba(0,113,227,.1)}summary{font-size:12px;font-weight:800}.tiny{font-size:11px;color:var(--muted);line-height:1.4;margin-top:7px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.hero h1{font-size:38px}.row.mobilecol{flex-direction:column;align-items:stretch}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="top">
+  <div class="brand"><div class="logo">PF</div><div><b>Parle Français</b><small>Bain de langue · APP MADA</small></div></div>
+  <button class="iconbtn" id="themeBtn">🌙</button>
+ </div>
+
+ <div class="hero">
+  <h1>Parlez plus.<br>Bloquez moins.</h1>
+  <p>Un partenaire de conversation en français qui s’adapte à votre niveau, votre objectif et votre façon d’apprendre.</p>
+ </div>
+
+ <div id="modeBanner" class="modebanner">MODE DÉMO — ajoutez votre clé API pour activer GPT-5 Nano.</div>
+
+ <div class="card">
+  <div class="title">Avant de commencer</div>
+  <div class="grid" id="modes">
+   <button class="choice active" data-mode="correct"><b>Corriger mes erreurs</b><span>Correction utile après votre phrase.</span></button>
+   <button class="choice" data-mode="reformulate"><b>Reformuler doucement</b><span>Apprendre sans casser la conversation.</span></button>
+   <button class="choice" data-mode="free"><b>Discussion libre</b><span>Priorité à la fluidité.</span></button>
+   <button class="choice" data-mode="coach"><b>Mode coach</b><span>Plus de relances et mini-défis.</span></button>
+  </div>
+
+  <label>Niveau</label>
+  <select id="level"><option>A1 — Débutant</option><option selected>A2 — Élémentaire</option><option>B1 — Intermédiaire</option><option>B2 — Intermédiaire avancé</option><option>C1 — Avancé</option></select>
+
+  <label>Objectif</label>
+  <select id="goal"><option>Conversation du quotidien</option><option>Travail et clients</option><option>Voyage</option><option>Entretien</option><option>Études</option><option>Prononciation et aisance</option></select>
+
+  <label>Thème</label>
+  <div class="chips" id="topics">
+   <button class="chip active" data-topic="Se présenter">Se présenter</button>
+   <button class="chip" data-topic="Travail">Travail</button>
+   <button class="chip" data-topic="Achats">Achats</button>
+   <button class="chip" data-topic="Restaurant">Restaurant</button>
+   <button class="chip" data-topic="Voyage">Voyage</button>
+   <button class="chip" data-topic="Conversation surprise">Surprise</button>
+  </div>
+
+  <label>Voix de l’assistant</label>
+  <div class="row">
+   <select id="voice" class="grow"><option value="female">Voix femme</option><option value="male">Voix homme</option></select>
+   <button class="btn soft" id="voiceTest">Écouter</button>
+  </div>
+  <div class="tiny">La voix exacte dépend des voix françaises installées sur votre téléphone.</div>
+
+  <details>
+   <summary>⚙️ API Test — GPT-5 Nano</summary>
+   <label>Modèle</label>
+   <input id="model" value="gpt-5-nano" readonly>
+   <label>Clé API OpenAI</label>
+   <input id="key" type="password" placeholder="sk-...">
+   <div class="row" style="margin-top:9px"><button class="btn soft" id="useApi">Activer</button><button class="btn soft" id="clearApi">Effacer</button></div>
+   <div class="tiny">Pour ce test, la clé reste uniquement en mémoire de session dans l’app. La version finale APP MADA passera par Supabase pour cacher totalement votre clé.</div>
+  </details>
+
+  <button class="btn" id="start" style="width:100%;margin-top:13px">Commencer la conversation</button>
+ </div>
+
+ <div class="card">
+  <div class="stats">
+   <div class="stat"><b id="turns">0</b><span>ÉCHANGES</span></div>
+   <div class="stat"><b id="minutes">0</b><span>MINUTES</span></div>
+   <div class="stat"><b id="status">Démo</b><span>MODE</span></div>
+  </div>
+ </div>
+
+ <div class="card">
+  <div class="title">Conversation</div>
+  <div class="chat" id="chat"><div class="msg ai">Bonjour 👋 Configurez votre session puis appuyez sur <b>Commencer la conversation</b>.</div></div>
+  <div class="micwrap">
+   <button class="mic" id="mic">🎙️</button>
+   <div class="hint" id="micHint">Appuyez pour parler en français</div>
+   <div class="row mobilecol"><input id="text" class="grow" placeholder="Ou écrivez votre phrase ici…"><button class="btn black" id="send">Envoyer</button></div>
+  </div>
+ </div>
+</div>
+
+<script>
+var S={mode:"correct",topic:"Se présenter",started:false,turns:0,start:0,apiKey:"",model:"gpt-5-nano",history:[],voice:"female"};
+
+function $(id){return document.getElementById(id)}
+function strip(s){var d=document.createElement("div");d.innerHTML=s;return d.textContent||d.innerText||""}
+function add(type,text){
+ var d=document.createElement("div");d.className="msg "+type;d.innerHTML=text;$("chat").appendChild(d);$("chat").scrollTop=$("chat").scrollHeight;
+ if(type==="me")S.history.push({role:"user",content:strip(text)});
+ if(type==="ai")S.history.push({role:"assistant",content:strip(text)});
+}
+function setApiState(){
+ var on=!!S.apiKey;$("modeBanner").className="modebanner"+(on?" on":"");$("status").textContent=on?"API":"Démo";
+ $("modeBanner").textContent=on?"API ACTIVE — GPT-5 Nano génère les réponses. La voix est celle du téléphone.":"MODE DÉMO — ajoutez votre clé API pour activer GPT-5 Nano.";
+}
+function speak(text){
+ var clean=strip(text);
+ if(window.AndroidBridge&&AndroidBridge.speak){AndroidBridge.speak(clean,S.voice);return}
+ if("speechSynthesis" in window){var u=new SpeechSynthesisUtterance(clean);u.lang="fr-FR";u.rate=.96;speechSynthesis.cancel();speechSynthesis.speak(u)}
+}
+function systemPrompt(){
+ return "Tu es un partenaire de conversation orale en français pour un apprenant malgache. Fais parler l'utilisateur naturellement. Adapte ton vocabulaire au niveau "+$("level").value+". Objectif: "+$("goal").value+". Thème: "+S.topic+". Mode: "+S.mode+". Si mode correct, corrige seulement les erreurs importantes après avoir répondu naturellement. Si reformulate, reformule discrètement. Si free, privilégie la fluidité. Si coach, pose davantage de questions. Réponse courte, naturelle, 2 à 5 phrases maximum, toujours en français.";
+}
+function apiMessages(text){
+ var h=S.history.slice(-10);var arr=[{role:"system",content:systemPrompt()}];for(var i=0;i<h.length;i++)arr.push(h[i]);arr.push({role:"user",content:text});return arr;
+}
+function start(){
+ S.started=true;S.turns=0;S.start=Date.now();S.history=[];$("turns").textContent="0";$("minutes").textContent="0";$("chat").innerHTML="";
+ var t="Bonjour 👋 Nous allons parler en français. Niveau <b>"+$("level").value.split("—")[0]+"</b>, thème <b>"+S.topic+"</b>. Pour commencer : présentez-vous en quelques phrases.";
+ add("ai",t);speak(t);
+}
+function demoReply(text){
+ var low=text.toLowerCase();
+ if(S.mode==="correct"){
+  if(low.indexOf("pratiquer français")>=0)add("note","💡 Vous pouvez dire : <b>Je veux pratiquer le français.</b>");
+  if(low.indexOf("hier je vais")>=0)add("note","💡 Avec « hier », dites plutôt : <b>Hier, je suis allé…</b>");
+ }
+ var q=["Très bien. Pouvez-vous m’en dire un peu plus ?","D’accord. Et pourquoi est-ce important pour vous ?","Je comprends. Donnez-moi un exemple concret.","Très bien. Que faites-vous habituellement dans cette situation ?"];
+ var r=q[S.turns%q.length];if(S.mode==="coach")r="Bien. Faites maintenant une phrase un peu plus longue. "+r;if(S.mode==="free")r="D’accord, je vous suis. "+r;
+ add("ai",r);speak(r);
+}
+function callApi(text){
+ var messages=apiMessages(text);
+ if(window.AndroidBridge&&AndroidBridge.callOpenAI){
+  $("micHint").textContent="GPT réfléchit…";AndroidBridge.callOpenAI(S.apiKey,S.model,JSON.stringify(messages));return;
+ }
+ add("note","API directe non disponible dans ce navigateur. Utilisez l’APK pour le test API.");
+}
+function send(){
+ var text=$("text").value.trim();if(!text)return;if(!S.started)start();add("me",text);$("text").value="";S.turns++;$("turns").textContent=S.turns;
+ if(S.apiKey)callApi(text);else setTimeout(function(){demoReply(text)},250);
+}
+window.onNativeApiResult=function(reply){$("micHint").textContent="Appuyez pour parler en français";add("ai",reply.replace(/\n/g,"<br>"));speak(reply)}
+window.onNativeApiError=function(err){$("micHint").textContent="Appuyez pour parler";add("note","⚠️ "+err)}
+window.onNativeSpeechResult=function(text){$("mic").classList.remove("listen");$("micHint").textContent="Phrase reconnue";$("text").value=text;send()}
+window.onNativeSpeechError=function(err){$("mic").classList.remove("listen");$("micHint").textContent=err}
+
+document.querySelectorAll("#modes .choice").forEach(function(b){b.onclick=function(){document.querySelectorAll("#modes .choice").forEach(function(x){x.classList.remove("active")});b.classList.add("active");S.mode=b.dataset.mode}})
+document.querySelectorAll("#topics .chip").forEach(function(b){b.onclick=function(){document.querySelectorAll("#topics .chip").forEach(function(x){x.classList.remove("active")});b.classList.add("active");S.topic=b.dataset.topic}})
+$("voice").onchange=function(){S.voice=this.value}
+$("voiceTest").onclick=function(){speak("Bonjour. Je suis votre partenaire de conversation en français.")}
+$("useApi").onclick=function(){S.apiKey=$("key").value.trim();S.model=$("model").value.trim()||"gpt-5-nano";if(S.apiKey)sessionStorage.setItem("pf_key",S.apiKey);setApiState()}
+$("clearApi").onclick=function(){S.apiKey="";$("key").value="";sessionStorage.removeItem("pf_key");setApiState()}
+$("start").onclick=start;$("send").onclick=send;$("text").onkeydown=function(e){if(e.key==="Enter")send()}
+$("mic").onclick=function(){if(window.AndroidBridge&&AndroidBridge.startRecognition){this.classList.add("listen");$("micHint").textContent="Je vous écoute…";AndroidBridge.startRecognition()}else{$("micHint").textContent="Micro natif disponible dans l’APK."}}
+$("themeBtn").onclick=function(){document.body.classList.toggle("dark");var d=document.body.classList.contains("dark");this.textContent=d?"☀️":"🌙";localStorage.setItem("pf_dark",d?"1":"0")}
+if(localStorage.getItem("pf_dark")==="1"){$("themeBtn").click()}
+var saved=sessionStorage.getItem("pf_key");if(saved){S.apiKey=saved;$("key").value=saved}setApiState();
+setInterval(function(){if(S.start)$("minutes").textContent=Math.floor((Date.now()-S.start)/60000)},5000);
+</script>
+</body>
+</html>
