@@ -131,10 +131,24 @@ function speak(text){
  if("speechSynthesis" in window){var u=new SpeechSynthesisUtterance(clean);u.lang="fr-FR";u.rate=.96;speechSynthesis.cancel();speechSynthesis.speak(u)}
 }
 function systemPrompt(){
- return "Tu es un partenaire de conversation orale en français pour un apprenant malgache. Fais parler l'utilisateur naturellement. Adapte ton vocabulaire au niveau "+$("level").value+". Objectif: "+$("goal").value+". Thème: "+S.topic+". Mode: "+S.mode+". Si mode correct, corrige seulement les erreurs importantes après avoir répondu naturellement. Si reformulate, reformule discrètement. Si free, privilégie la fluidité. Si coach, pose davantage de questions. Réponse courte, naturelle, 2 à 5 phrases maximum, toujours en français.";
+ return "Tu es un partenaire de conversation orale en français pour un apprenant malgache. "+
+ "Adapte ton vocabulaire au niveau "+$("level").value+". Objectif: "+$("goal").value+". Thème: "+S.topic+". Mode: "+S.mode+". "+
+ "Tu dois répondre UNIQUEMENT avec un objet JSON valide, sans markdown, avec les clés reply, correction_needed, original, corrected, explanation. "+
+ "Si aucune correction n est nécessaire, mets correction_needed à false et original, corrected, explanation à des chaînes vides. "+
+ "RÈGLE OBLIGATOIRE POUR LE MODE correct : examine CHAQUE phrase et détecte les erreurs de grammaire, conjugaison, article, genre, nombre, préposition, ordre des mots, vocabulaire ou formulation non naturelle. "+
+ "Au niveau A1/A2, corrige aussi les petites erreurs utiles comme les articles et prépositions. N ignore jamais une erreur détectable. "+
+ "La correction doit reprendre la phrase complète. L explication doit être simple, maximum une phrase. "+
+ "Après la correction, reply doit poursuivre naturellement la conversation avec une question courte. "+
+ "En mode reformulate, reformule naturellement dans reply sans afficher une leçon. En mode free, privilégie la fluidité. En mode coach, pose davantage de questions. "+
+ "reply doit rester court : 2 à 4 phrases maximum, toujours en français.";
 }
 function apiMessages(text){
- var h=S.history.slice(-10);var arr=[{role:"system",content:systemPrompt()}];for(var i=0;i<h.length;i++)arr.push(h[i]);arr.push({role:"user",content:text});return arr;
+ var h=S.history.slice(-10);
+ if(h.length && h[h.length-1].role==="user" && h[h.length-1].content===text){h=h.slice(0,-1)}
+ var arr=[{role:"system",content:systemPrompt()}];
+ for(var i=0;i<h.length;i++)arr.push(h[i]);
+ arr.push({role:"user",content:text});
+ return arr;
 }
 function start(){
  S.started=true;S.turns=0;S.start=Date.now();S.history=[];$("turns").textContent="0";$("minutes").textContent="0";$("chat").innerHTML="";
@@ -162,7 +176,24 @@ function send(){
  var text=$("text").value.trim();if(!text)return;if(!S.started)start();add("me",text);$("text").value="";S.turns++;$("turns").textContent=S.turns;
  if(S.apiKey)callApi(text);else setTimeout(function(){demoReply(text)},250);
 }
-window.onNativeApiResult=function(reply){$("micHint").textContent="Appuyez pour parler en français";add("ai",reply.replace(/\n/g,"<br>"));speak(reply)}
+window.onNativeApiResult=function(raw){
+ $("micHint").textContent="Appuyez pour parler en français";
+ var data=null;
+ try{ data=JSON.parse((raw||"").trim()); }catch(e){}
+ if(data && typeof data==="object" && data.reply){
+   if(S.mode==="correct" && data.correction_needed){
+     var o=String(data.original||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+     var c=String(data.corrected||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+     var x=String(data.explanation||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+     add("note","✏️ <b>Correction</b><br><span style=\"opacity:.72\">Vous avez dit :</span> "+o+"<br><span style=\"opacity:.72\">Dites plutôt :</span> <b>"+c+"</b>"+(x?"<br><span style=\"opacity:.72\">Pourquoi :</span> "+x:""));
+   }
+   add("ai",String(data.reply).replace(/\\n/g,"<br>"));
+   speak(String(data.reply));
+ }else{
+   add("ai",String(raw).replace(/\\n/g,"<br>"));
+   speak(String(raw));
+ }
+}
 window.onNativeApiError=function(err){$("micHint").textContent="Appuyez pour parler";add("note","⚠️ "+err)}
 window.onNativeSpeechResult=function(text){$("mic").classList.remove("listen");$("micHint").textContent="Phrase reconnue";$("text").value=text;send()}
 window.onNativeSpeechError=function(err){$("mic").classList.remove("listen");$("micHint").textContent=err}
