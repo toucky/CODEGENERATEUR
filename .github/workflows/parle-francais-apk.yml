@@ -1,5 +1,6 @@
 name: Build Parle Francais APK
 
+# Rebuild after AndroidX configuration fix
 on:
   push:
     branches:
