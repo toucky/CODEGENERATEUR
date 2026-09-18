@@ -147,7 +147,7 @@ public class MainActivity extends Activity {
         optionsCard.addView(text("2. Rendu souhaité", 15, Color.WHITE, true));
         deviceSpinner = spinner(devices);
         styleSpinner = spinner(styles);
-        qualitySpinner = spinner(new String[]{"Qualité haute", "Qualité standard"});
+        qualitySpinner = spinner(new String[]{"Éco — moins cher", "Standard", "Premium"});
         addLabeledSpinner(optionsCard, "Caméra / appareil", deviceSpinner);
         addLabeledSpinner(optionsCard, "Style", styleSpinner);
         addLabeledSpinner(optionsCard, "Qualité", qualitySpinner);
@@ -322,7 +322,8 @@ public class MainActivity extends Activity {
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString("api_key", key).apply();
         String device = devices[deviceSpinner.getSelectedItemPosition()];
         String style = styles[styleSpinner.getSelectedItemPosition()];
-        String quality = qualitySpinner.getSelectedItemPosition() == 0 ? "high" : "medium";
+        int qualityPos = qualitySpinner.getSelectedItemPosition();
+        String quality = qualityPos == 0 ? "low" : (qualityPos == 1 ? "medium" : "high");
 
         setBusy(true, "Transformation IA en cours…");
         new Thread(() -> {
@@ -332,14 +333,14 @@ public class MainActivity extends Activity {
                 if (mime == null || !mime.startsWith("image/")) mime = "image/jpeg";
                 String prompt = buildPrompt(device, style);
 
-                ApiResult r = callImageEdit(key, "gpt-image-2", prompt, imageBytes, mime, quality, true);
+                ApiResult r = callImageEdit(key, "gpt-image-2.5-flare", prompt, imageBytes, mime, quality, true);
                 if (!r.ok && shouldRetryWithoutFidelity(r.error)) {
-                    r = callImageEdit(key, "gpt-image-2", prompt, imageBytes, mime, quality, false);
+                    r = callImageEdit(key, "gpt-image-2.5-flare", prompt, imageBytes, mime, quality, false);
                 }
                 if (!r.ok && shouldFallbackModel(r.error)) {
-                    r = callImageEdit(key, "gpt-image-1", prompt, imageBytes, mime, quality, true);
+                    r = callImageEdit(key, "gpt-image-2", prompt, imageBytes, mime, quality, true);
                     if (!r.ok && shouldRetryWithoutFidelity(r.error)) {
-                        r = callImageEdit(key, "gpt-image-1", prompt, imageBytes, mime, quality, false);
+                        r = callImageEdit(key, "gpt-image-2", prompt, imageBytes, mime, quality, false);
                     }
                 }
 
