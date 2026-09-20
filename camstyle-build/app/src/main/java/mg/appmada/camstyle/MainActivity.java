@@ -64,14 +64,50 @@ public class MainActivity extends Activity {
     private TextView status;
 
     private final String[] devices = new String[]{
-            "iPhone 17 Pro", "Samsung Galaxy Ultra", "Google Pixel Pro", "Xiaomi Ultra",
-            "Huawei Pura Pro", "Sony Xperia Pro", "Canon EOS R5", "Sony Alpha 1",
-            "Nikon Z8", "Fujifilm GFX"
+            "iPhone 18 Pro — Natural",
+            "iPhone 18 Pro — Cinematic",
+            "Samsung Galaxy S26 Ultra — ProVisual",
+            "Google Pixel 11 Pro — Real Tone",
+            "Google Pixel 11 Pro — Night Sight",
+            "Xiaomi 17 Ultra — Leica Authentic",
+            "Xiaomi 17 Ultra — Leica Vibrant",
+            "OPPO Find X9 Ultra — Hasselblad Natural",
+            "OPPO Find X9 Ultra — Hasselblad Master",
+            "vivo X300 Ultra — ZEISS Natural",
+            "vivo X300 Ultra — ZEISS Portrait",
+            "HUAWEI Pura 80 Ultra — XMAGE",
+            "Sony Xperia 1 VIII — Natural",
+            "HONOR Magic8 Pro — Portrait",
+            "HONOR Magic8 Pro — Night",
+            "OnePlus 15 — Natural",
+            "OnePlus 15 — Vivid",
+            "realme GT 8 Pro — RICOH GR Street",
+            "Hasselblad X2D II 100C — HNCS HDR",
+            "Fujifilm GFX100 II — REALA ACE",
+            "Fujifilm GFX100RF — PROVIA",
+            "Fujifilm GFX100RF — Classic Chrome",
+            "Sony α7R VI — Natural High Detail",
+            "Sony α7 V — Natural",
+            "Canon EOS R5 Mark II — Portrait",
+            "Canon EOS R6 Mark III — Faithful 5200K",
+            "Nikon Z8 — Rich Tone Portrait",
+            "Nikon Z8 — Landscape",
+            "Leica Q3 43 — Natural",
+            "Leica Q3 43 — Vivid",
+            "Leica Q3 43 — Chrome",
+            "Leica SL3-S — Natural",
+            "Panasonic Lumix S1RII — Natural",
+            "Panasonic Lumix S1RII — Real Time LUT",
+            "Ricoh GR IV — Positive Film",
+            "Ricoh GR IV — Negative Film",
+            "Ricoh GR IV — Cinema Yellow",
+            "Ricoh GR IV Monochrome — Grainy",
+            "Ricoh GR IV Monochrome — High Contrast"
     };
 
     private final String[] styles = new String[]{
             "Auto naturel", "Portrait", "Paysage", "Nuit", "Studio", "Cinématique",
-            "Produit", "Cuisine / Food"
+            "Produit", "Cuisine / Food", "Street", "Mariage", "Golden Hour", "Macro"
     };
 
     @Override
@@ -95,7 +131,7 @@ public class MainActivity extends Activity {
 
         TextView title = text("CamStyle AI", 30, Color.WHITE, true);
         root.addView(title);
-        TextView subtitle = text("Premium économique • rendu wow • budget visé ~2 000 Ar / 10 photos.", 15, Color.rgb(174,174,181), false);
+        TextView subtitle = text("39 rendus 2026 • smartphone + appareil pro • Premium économique.", 15, Color.rgb(174,174,181), false);
         subtitle.setPadding(0, dp(4), 0, dp(18));
         root.addView(subtitle);
 
@@ -148,10 +184,10 @@ public class MainActivity extends Activity {
         deviceSpinner = spinner(devices);
         styleSpinner = spinner(styles);
         qualitySpinner = spinner(new String[]{"Premium économique — GPT Image 2 / Medium"});
-        addLabeledSpinner(optionsCard, "Caméra / appareil", deviceSpinner);
+        addLabeledSpinner(optionsCard, "Rendu appareil 2026", deviceSpinner);
         addLabeledSpinner(optionsCard, "Style", styleSpinner);
         addLabeledSpinner(optionsCard, "Qualité", qualitySpinner);
-        TextView lock = text("🔒 Verrou identité & objets : visage, corps, pose, vêtements, arrière-plan et objets doivent rester identiques.", 13, Color.rgb(180,205,255), false);
+        TextView lock = text("🔒 Verrou identité & objets : visage, corps, pose, vêtements, texte, arrière-plan et objets restent identiques. Les profils reproduisent la signature colorimétrique documentée, pas le matériel physique.", 13, Color.rgb(180,205,255), false);
         lock.setPadding(0, dp(14), 0, 0);
         optionsCard.addView(lock);
         root.addView(optionsCard);
@@ -372,16 +408,105 @@ public class MainActivity extends Activity {
 
     private String deviceCharacteristics(String d) {
         String s = d.toLowerCase(Locale.ROOT);
-        if (s.contains("iphone")) return "premium modern smartphone look, natural skin tones, balanced HDR, controlled highlights, clean detail, realistic contrast, neutral-to-warm color science";
-        if (s.contains("samsung")) return "premium flagship smartphone rendering, crisp detail, wide dynamic range, vivid but controlled colors, clean shadows";
-        if (s.contains("pixel")) return "computational photography look, realistic HDR, excellent skin-tone balance, clean shadows, natural detail";
-        if (s.contains("xiaomi")) return "premium flagship camera-phone rendering, rich tonal depth, refined local contrast, detailed but natural texture";
-        if (s.contains("huawei")) return "high-end mobile photography look, strong dynamic range, clean low-light processing, refined color separation";
-        if (s.contains("xperia")) return "natural Sony-style mobile rendering, restrained sharpening, realistic colors, photographic contrast";
-        if (s.contains("canon")) return "full-frame professional camera rendering, smooth highlight roll-off, natural skin tones, rich but realistic color, organic detail";
-        if (s.contains("alpha")) return "high-resolution professional full-frame rendering, neutral color, high micro-detail, clean dynamic range, realistic texture";
-        if (s.contains("nikon")) return "professional full-frame rendering, strong tonal latitude, natural colors, clean detail and smooth gradients";
-        return "medium-format professional rendering, exceptional tonal depth, fine natural detail, smooth color transitions, restrained sharpening";
+
+        if (s.contains("iphone 18 pro") && s.contains("cinematic"))
+            return "Apple Photographic Styles 3 inspired cinematic rendering: neutral skin, controlled warm highlights, slightly lowered saturation, smooth tonal transitions, restrained texture, subtle film-like grain, balanced Smart HDR, no crushed blacks";
+        if (s.contains("iphone 18 pro"))
+            return "Apple Photographic Styles 3 inspired natural rendering: realistic skin, balanced tone and color, clean fine detail, moderate texture, near-zero grain, smooth highlight roll-off, controlled shadows, wide-gamut natural color, no aggressive oversharpening";
+
+        if (s.contains("samsung galaxy s26"))
+            return "Samsung ProVisual Engine inspired rendering: very crisp fine detail, high local clarity, bright clean exposure, vivid yet bounded blue/green/red saturation, strong low-light denoising, wide dynamic range, clean stabilized-looking edges, keep skin believable";
+
+        if (s.contains("pixel 11") && s.contains("night"))
+            return "Google Pixel Night Sight inspired rendering: neutral Real Tone skin, aggressive luminance/chroma noise cleanup without waxy skin, lifted but believable shadows, protected bright signs and lamps, neutral white balance, restrained saturation, crisp natural detail";
+        if (s.contains("pixel 11"))
+            return "Google Pixel Real Tone inspired rendering: prioritize accurate diverse skin tones, neutral white balance, computational HDR with protected highlights and open shadows, moderate saturation, natural detail, low haloing and low oversharpening";
+
+        if (s.contains("xiaomi 17") && s.contains("vibrant"))
+            return "Leica Vibrant inspired look documented on Xiaomi 17 Ultra: richer saturation, luminous color, stronger but elegant contrast, deep blacks without clipping, warm controlled skin, refined micro-contrast, natural texture";
+        if (s.contains("xiaomi 17"))
+            return "Leica Authentic inspired look documented on Xiaomi 17 Ultra: restrained saturation, deeper documentary contrast, natural skin texture, subtle warm-neutral white balance, rich shadow tonality, realistic color, minimal digital-looking sharpening";
+
+        if (s.contains("oppo find x9") && s.contains("master"))
+            return "OPPO Hasselblad Master inspired rendering: Hasselblad-like natural tonality plus stronger creative contrast, precise spectral color separation, clean skin, smooth highlight transitions, polished professional micro-contrast";
+        if (s.contains("oppo find x9"))
+            return "OPPO True Color + Hasselblad Natural Colour inspired rendering: faithful natural hues, consistent color across the frame, moderate contrast, smooth skin tonality, smooth gradients, controlled saturation, large dynamic-range feeling";
+
+        if (s.contains("vivo x300") && s.contains("portrait"))
+            return "ZEISS portrait inspired rendering: realistic skin, gentle face contrast, clean edge separation, restrained saturation, smooth highlight transition, subtle natural bokeh impression only if already present, preserve exact geometry";
+        if (s.contains("vivo x300"))
+            return "ZEISS-inspired natural rendering: neutral color balance, high micro-contrast without halos, crisp optical-looking detail, controlled saturation, clean tonal separation, realistic skin and restrained sharpening";
+
+        if (s.contains("huawei pura 80"))
+            return "XMAGE-inspired rendering: strong but realistic dynamic range, precise color separation, clean low-light chroma, luminous shadows, protected highlights, natural skin, high perceived clarity without fake HDR";
+
+        if (s.contains("xperia 1 viii"))
+            return "Sony Xperia natural photographic rendering: restrained sharpening and saturation, accurate white balance, realistic skin, smooth highlight roll-off, neutral shadows, clean detail, understated professional contrast";
+
+        if (s.contains("honor magic8") && s.contains("night"))
+            return "HONOR night-photo inspired rendering: bright but plausible night exposure, strong noise reduction, protected neon and lamps, rich dark colors, clean skin, strong detail retention";
+        if (s.contains("honor magic8"))
+            return "HONOR portrait inspired rendering: luminous skin, moderate warmth, clean subject separation, pleasant contrast, vivid but controlled color, soft highlight roll-off";
+
+        if (s.contains("oneplus 15") && s.contains("vivid"))
+            return "OnePlus vivid rendering: bright clean exposure, richer saturation, punchier contrast, clear texture and shadows, preserve natural skin and prevent oversaturation";
+        if (s.contains("oneplus 15"))
+            return "OnePlus natural rendering: balanced contrast, clear detail, neutral-to-slightly-warm color, clean shadows, moderate saturation, polished flagship-phone look";
+
+        if (s.contains("realme gt 8"))
+            return "RICOH GR street-inspired smartphone rendering: documentary street contrast, slightly muted saturation, firm blacks, crisp midtone texture, subtle film character, realistic skin, no artificial HDR";
+
+        if (s.contains("hasselblad x2d"))
+            return "Hasselblad Natural Colour Solution HDR inspired rendering: true-to-life color, extremely smooth hue and tonal transitions, gentle saturation, deep clean dynamic range, soft highlight shoulder, natural skin, medium-format tonal depth, restrained sharpening";
+
+        if (s.contains("gfx100 ii"))
+            return "FUJIFILM REALA ACE documented film simulation: faithful color reproduction with a clearly defined tonal scale, balanced saturation, clean natural skin, smooth medium-format gradation, fine detail";
+        if (s.contains("gfx100rf") && s.contains("classic chrome"))
+            return "FUJIFILM Classic Chrome documented film simulation: reduced saturation, harder documentary shadow contrast, subdued color, realistic reportage mood, controlled highlights, subtle film character";
+        if (s.contains("gfx100rf"))
+            return "FUJIFILM PROVIA documented film simulation: neutral professional color reproduction, balanced saturation and contrast, clean skin, versatile tonal response, smooth medium-format gradients";
+
+        if (s.contains("α7r vi") || s.contains("a7r vi"))
+            return "Sony Alpha 7R VI inspired rendering: neutral natural color, stable accurate white balance, up-to-16-stop wide-dynamic-range feeling, excellent fine micro-detail, low night noise, balanced shadows/highlights, minimal color bias";
+        if (s.contains("α7 v") || s.contains("a7 v"))
+            return "Sony Alpha 7 V inspired rendering: neutral professional color, realistic skin, balanced dynamic range, fine but restrained detail, clean shadows, natural white balance";
+
+        if (s.contains("canon eos r5"))
+            return "Canon Portrait Picture Style inspired rendering: smooth natural skin tones, slightly reduced sharpening on skin, pleasing warm-neutral complexion, bright clean exposure, gentle contrast, preserve hair and fabric detail";
+        if (s.contains("canon eos r6"))
+            return "Canon Faithful Picture Style documented behavior: daylight 5200K faithful color target, subdued rendering, lower contrast, natural color tones, restrained sharpening and saturation, accurate product/skin color";
+
+        if (s.contains("nikon z8") && s.contains("rich tone"))
+            return "Nikon Rich Tone Portrait Picture Control documented behavior: richer portrait tones while retaining complexion detail and protecting highlight detail, natural skin, moderate saturation, clean sharpness";
+        if (s.contains("nikon z8"))
+            return "Nikon Landscape Picture Control inspired rendering: vivid natural/city landscape color, stronger primary colors, crisp fine detail, clear sky/foliage separation, protected highlights and deep but readable shadows";
+
+        if (s.contains("leica q3") && s.contains("vivid"))
+            return "Leica Vivid documented Look: stronger saturation and contrast, bold lively colors, enhanced detail, clean blacks, energetic rendering without clipping";
+        if (s.contains("leica q3") && s.contains("chrome"))
+            return "Leica Chrome inspired analog Look: muted classic color, gentle warm-neutral bias, filmic midtone contrast, subtle grain, soft highlight shoulder, timeless documentary feel";
+        if (s.contains("leica q3"))
+            return "Leica Natural documented Look: softened saturation, smooth tonal transitions, moderate contrast, gentle timeless rendering, realistic color and skin";
+        if (s.contains("leica sl3"))
+            return "Leica Natural documented Look on SL3 family: softened saturation, smooth gradations, moderate contrast, natural skin, restrained sharpening, premium full-frame tonality";
+
+        if (s.contains("lumix") && s.contains("lut"))
+            return "Panasonic LUMIX Real Time LUT inspired professional grade: rich tonal detail, smooth transitions, cinematic but realistic color, controlled highlight roll-off, neutral skin baseline, polished contrast";
+        if (s.contains("lumix"))
+            return "Panasonic LUMIX natural color science: rich tonal detail, smooth transitions, neutral-to-warm natural skin, moderate saturation, balanced contrast, clean professional rendering";
+
+        if (s.contains("ricoh gr iv monochrome") && s.contains("grainy"))
+            return "RICOH GR IV Monochrome Grainy documented Image Control: pronounced silver-halide-like grain, strong monochrome character, preserve highlight information and readable shadow detail, crisp documentary texture";
+        if (s.contains("ricoh gr iv monochrome"))
+            return "RICOH GR IV Monochrome High Contrast inspired rendering: pronounced black-white contrast, strong light-shadow separation, crisp edge definition, dramatic monochrome, avoid clipped highlights";
+        if (s.contains("ricoh gr iv") && s.contains("negative"))
+            return "RICOH GR IV Negative Film documented Image Control inspired rendering: negative-film-like color, slightly muted saturation, filmic contrast, warm/cool separation, subtle grain and street-photo character";
+        if (s.contains("ricoh gr iv") && s.contains("cinema"))
+            return "RICOH GR IV Cinema Yellow documented Image Control inspired rendering: cinema-style yellowish tone, lowered saturation, stronger contrast, filmic shadows, subtle grain, documentary atmosphere";
+        if (s.contains("ricoh gr iv"))
+            return "RICOH GR IV Positive Film documented Image Control inspired rendering: positive-film-like richer saturation, firm contrast, strong street color separation, crisp midtones and subtle film character";
+
+        return "premium natural professional rendering with realistic color, smooth tonal transitions, clean shadows, protected highlights and restrained sharpening";
     }
 
     private String styleCharacteristics(String s) {
@@ -392,6 +517,10 @@ public class MainActivity extends Activity {
         if (s.startsWith("Cin")) return "cinematic color grading and highlight roll-off only, subtle and realistic; no scene or subject changes";
         if (s.startsWith("Produit")) return "product-photo clarity and neutral color rendering while preserving exact product shape, labels, text and placement";
         if (s.startsWith("Cuisine")) return "natural appetizing food color and texture rendering while preserving exact ingredients, plate, portions and objects";
+        if (s.startsWith("Street")) return "documentary street rendering with strong midtone separation, realistic skin, preserved signage/text, controlled highlights and subtle texture";
+        if (s.startsWith("Mariage")) return "wedding rendering with flattering but accurate skin, soft highlight roll-off, clean whites, elegant color and preserved fabric detail";
+        if (s.startsWith("Golden")) return "golden-hour rendering: preserve actual light direction, gently warm existing sunlight, protect skin and highlights, no invented sun or flare";
+        if (s.startsWith("Macro")) return "macro-style clarity only on existing subject detail; enhance micro-texture and local contrast without changing geometry, focus plane or adding detail that is not present";
         return "natural premium automatic photo processing with realistic color and contrast";
     }
 
