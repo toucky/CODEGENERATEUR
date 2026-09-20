@@ -95,7 +95,7 @@ public class MainActivity extends Activity {
 
         TextView title = text("CamStyle AI", 30, Color.WHITE, true);
         root.addView(title);
-        TextView subtitle = text("Change le rendu caméra, pas les personnes ni les objets.", 15, Color.rgb(174,174,181), false);
+        TextView subtitle = text("Premium économique • rendu wow • budget visé ~2 000 Ar / 10 photos.", 15, Color.rgb(174,174,181), false);
         subtitle.setPadding(0, dp(4), 0, dp(18));
         root.addView(subtitle);
 
@@ -147,7 +147,7 @@ public class MainActivity extends Activity {
         optionsCard.addView(text("2. Rendu souhaité", 15, Color.WHITE, true));
         deviceSpinner = spinner(devices);
         styleSpinner = spinner(styles);
-        qualitySpinner = spinner(new String[]{"Éco — moins cher", "Standard", "Premium"});
+        qualitySpinner = spinner(new String[]{"Premium économique — GPT Image 2 / Medium"});
         addLabeledSpinner(optionsCard, "Caméra / appareil", deviceSpinner);
         addLabeledSpinner(optionsCard, "Style", styleSpinner);
         addLabeledSpinner(optionsCard, "Qualité", qualitySpinner);
@@ -322,27 +322,18 @@ public class MainActivity extends Activity {
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString("api_key", key).apply();
         String device = devices[deviceSpinner.getSelectedItemPosition()];
         String style = styles[styleSpinner.getSelectedItemPosition()];
-        int qualityPos = qualitySpinner.getSelectedItemPosition();
-        String quality = qualityPos == 0 ? "low" : (qualityPos == 1 ? "medium" : "high");
+        String quality = "medium";
 
         setBusy(true, "Transformation IA en cours…");
         new Thread(() -> {
             try {
-                byte[] imageBytes = readAll(inputUri, 50 * 1024 * 1024);
-                String mime = getContentResolver().getType(inputUri);
-                if (mime == null || !mime.startsWith("image/")) mime = "image/jpeg";
+                byte[] originalBytes = readAll(inputUri, 50 * 1024 * 1024);
+                byte[] imageBytes = optimizeInputForApi(originalBytes);
+                String mime = "image/jpeg";
                 String prompt = buildPrompt(device, style);
+                String outputSize = chooseOutputSize(originalBytes);
 
-                ApiResult r = callImageEdit(key, "gpt-image-2.5-flare", prompt, imageBytes, mime, quality, true);
-                if (!r.ok && shouldRetryWithoutFidelity(r.error)) {
-                    r = callImageEdit(key, "gpt-image-2.5-flare", prompt, imageBytes, mime, quality, false);
-                }
-                if (!r.ok && shouldFallbackModel(r.error)) {
-                    r = callImageEdit(key, "gpt-image-2", prompt, imageBytes, mime, quality, true);
-                    if (!r.ok && shouldRetryWithoutFidelity(r.error)) {
-                        r = callImageEdit(key, "gpt-image-2", prompt, imageBytes, mime, quality, false);
-                    }
-                }
+                ApiResult r = callImageEdit(key, "gpt-image-2", prompt, imageBytes, mime, quality, outputSize);
 
                 final ApiResult result = r;
                 runOnUiThread(() -> {
@@ -372,8 +363,9 @@ public class MainActivity extends Activity {
                 "ABSOLUTE PRESERVATION RULES: preserve every person's identity exactly, including the exact same face, facial geometry, skin tone, skin marks, age, expression, eyes, nose, mouth, jaw, ears, hair, body proportions, hands, pose, gaze and clothing. " +
                 "Preserve every object exactly: same objects, same count, same text and logos, same shapes, dimensions, colors, materials, positions, background structure, architecture and scene layout. " +
                 "Preserve composition, crop, perspective and camera viewpoint. DO NOT add, remove, replace, invent, beautify, retouch, reshape, age, de-age or move any person or object. DO NOT modify the face. DO NOT change written text. " +
-                "The ONLY allowed transformation is photographic capture/rendering characteristics: exposure, white balance, color science, tone curve, dynamic range, highlight roll-off, shadow rendering, micro-contrast, natural sharpening, noise rendering and physically plausible lens/depth rendering without changing geometry. " +
+                "The ONLY allowed transformation is photographic capture/rendering characteristics: exposure, white balance, premium color science, tone curve, dynamic range, smooth highlight roll-off, clean shadow rendering, selective micro-contrast, natural sharpening, chroma/luminance noise reduction and physically plausible lens/depth rendering without changing geometry. " +
                 "If any photographic effect would alter identity, geometry, objects, text or composition, skip that effect. Preservation always wins. " +
+                "PREMIUM WOW TARGET: make the photo immediately look cleaner, richer and more expensive while staying fully realistic. Improve color separation, white balance, local contrast and tonal depth. Apply strong but natural noise reduction in dark areas, preserve fine hair/skin/fabric details, avoid halos, oversharpening, plastic skin, fake HDR or excessive saturation. Protect highlights and recover clean shadows. " +
                 "Target rendering: " + capture + ". Style: " + stylePrompt + ". " +
                 "Final result must look like the SAME original photograph captured/processed by " + device + ", not a recreated scene.";
     }
@@ -403,7 +395,55 @@ public class MainActivity extends Activity {
         return "natural premium automatic photo processing with realistic color and contrast";
     }
 
-    private ApiResult callImageEdit(String key, String model, String prompt, byte[] image, String mime, String quality, boolean fidelity) {
+    private String chooseOutputSize(byte[] image) {
+        try {
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(image, 0, image.length, o);
+            if (o.outWidth <= 0 || o.outHeight <= 0) return "1024x1536";
+            float ratio = (float) o.outWidth / (float) o.outHeight;
+            if (ratio > 1.15f) return "1536x1024";
+            if (ratio < 0.87f) return "1024x1536";
+            return "1024x1024";
+        } catch (Exception ignored) {
+            return "1024x1536";
+        }
+    }
+
+    private byte[] optimizeInputForApi(byte[] original) throws Exception {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(original, 0, original.length, bounds);
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return original;
+
+        int sample = 1;
+        int maxDim = Math.max(bounds.outWidth, bounds.outHeight);
+        while (maxDim / sample > 3072) sample *= 2;
+
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inSampleSize = sample;
+        Bitmap decoded = BitmapFactory.decodeByteArray(original, 0, original.length, opts);
+        if (decoded == null) return original;
+
+        int w = decoded.getWidth();
+        int h = decoded.getHeight();
+        int longEdge = Math.max(w, h);
+        Bitmap scaled = decoded;
+        if (longEdge > 1536) {
+            float scale = 1536f / longEdge;
+            int nw = Math.max(1, Math.round(w * scale));
+            int nh = Math.max(1, Math.round(h * scale));
+            scaled = Bitmap.createScaledBitmap(decoded, nw, nh, true);
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        scaled.compress(Bitmap.CompressFormat.JPEG, 92, out);
+        if (scaled != decoded) scaled.recycle();
+        decoded.recycle();
+        return out.toByteArray();
+    }
+
+    private ApiResult callImageEdit(String key, String model, String prompt, byte[] image, String mime, String quality, String size) {
         HttpURLConnection conn = null;
         try {
             String boundary = "----CamStyle" + System.currentTimeMillis();
@@ -419,9 +459,8 @@ public class MainActivity extends Activity {
             writeField(out, boundary, "model", model);
             writeField(out, boundary, "prompt", prompt);
             writeField(out, boundary, "quality", quality);
-            writeField(out, boundary, "size", "auto");
+            writeField(out, boundary, "size", size);
             writeField(out, boundary, "output_format", "jpeg");
-            if (fidelity) writeField(out, boundary, "input_fidelity", "high");
             writeFile(out, boundary, "image", "input.jpg", mime, image);
             out.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
             out.flush();
