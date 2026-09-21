@@ -1,0 +1,21 @@
+name: Publish Mon Astro APK Release
+on:
+  push:
+    branches:
+      - mon-astro-apk-delivery-20260921
+    paths:
+      - '.github/workflows/publish-mon-astro-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish APK as release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete mon-astro-v0.1-test --yes --cleanup-tag 2>/dev/null || true
+          gh release create mon-astro-v0.1-test             delivery/Mon-Astro-Spatial-V0.1-Test.apk             --title "Mon Astro Spatial V0.1 Test"             --notes "APK Android de test : thème natal, calendrier, GPS/boussole, placement spatial et scan ARCore expérimental."
