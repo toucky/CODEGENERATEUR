@@ -1,0 +1,19 @@
+name: Package Mon Astro APK Artifact
+on:
+  push:
+    branches:
+      - mon-astro-apk-delivery-20260921
+    paths:
+      - '.github/workflows/package-mon-astro-artifact.yml'
+  workflow_dispatch:
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mon-Astro-Spatial-V0.1-Test
+          path: delivery/Mon-Astro-Spatial-V0.1-Test.apk
+          if-no-files-found: error
+          retention-days: 1
