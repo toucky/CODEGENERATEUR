@@ -2,7 +2,7 @@ name: Build Gasy Video IA APK
 
 on:
   push:
-    branches: [ "build-gasy-video-ia-v1" ]
+    branches: [ "build-gasy-video-ia-v1-0-1" ]
   workflow_dispatch:
 
 jobs:
@@ -39,11 +39,11 @@ jobs:
         run: gradle assembleDebug --stacktrace
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk Gasy-Video-IA-v1.0.0.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk Gasy-Video-IA-v1.0.1.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gasy-Video-IA-v1.0.0
-          path: Gasy-Video-IA-v1.0.0.apk
+          name: Gasy-Video-IA-v1.0.1
+          path: Gasy-Video-IA-v1.0.1.apk
           if-no-files-found: error
