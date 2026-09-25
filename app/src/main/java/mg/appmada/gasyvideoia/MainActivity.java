@@ -31,9 +31,17 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 9001;
+    private static final long POLL_INTERVAL_MS = 20000L;
+    private static final long POLL_BACKOFF_429_MS = 60000L;
+
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
+
+    private final Object pollLock = new Object();
+    private long nextPollAllowedAt = 0L;
+    private boolean pollInFlight = false;
+    private String activePollVideoId = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,6 +167,16 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void notifyRateLimit(long delayMs) {
+        long seconds = Math.max(1L, delayMs / 1000L);
+        runOnUiThread(() -> {
+            if (webView == null) return;
+            String message = "Serveur IA occupé. Nouvelle vérification automatique dans " + seconds + " s.";
+            String js = "if(window.onNativeRateLimit){window.onNativeRateLimit(" + JSONObject.quote(message) + ");}";
+            webView.evaluateJavascript(js, null);
+        });
+    }
+
     private String request(String method, String endpoint, String apiKey, String body) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
         conn.setRequestMethod(method);
@@ -166,7 +184,7 @@ public class MainActivity extends Activity {
         conn.setReadTimeout(180000);
         conn.setRequestProperty("Authorization", "Bearer " + apiKey);
         conn.setRequestProperty("Accept", "application/json");
-        conn.setRequestProperty("User-Agent", "GasyVideoIA/1.0 Android");
+        conn.setRequestProperty("User-Agent", "GasyVideoIA/1.0.1 Android");
         if (body != null) {
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
@@ -175,6 +193,7 @@ public class MainActivity extends Activity {
             try (OutputStream os = conn.getOutputStream()) { os.write(bytes); }
         }
         int code = conn.getResponseCode();
+        String retryAfterHeader = conn.getHeaderField("Retry-After");
         InputStream stream = code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream();
         StringBuilder out = new StringBuilder();
         if (stream != null) {
@@ -183,7 +202,7 @@ public class MainActivity extends Activity {
             }
         }
         conn.disconnect();
-        if (code < 200 || code >= 300) throw new Exception("API " + code + " : " + trim(out.toString(), 500));
+        if (code < 200 || code >= 300) throw new ApiException(code, out.toString(), retryAfterHeader);
         return out.toString();
     }
 
@@ -192,9 +211,31 @@ public class MainActivity extends Activity {
         return text.length() <= max ? text : text.substring(0, max);
     }
 
+    private static class ApiException extends Exception {
+        final int code;
+        final long retryAfterMs;
+
+        ApiException(int code, String body, String retryAfterHeader) {
+            super("API " + code + " : " + trim(body, 500));
+            this.code = code;
+            long retryMs = 0L;
+            if (retryAfterHeader != null) {
+                try {
+                    retryMs = Long.parseLong(retryAfterHeader.trim()) * 1000L;
+                } catch (Exception ignored) { }
+            }
+            this.retryAfterMs = retryMs;
+        }
+    }
+
     public class AndroidApi {
         @JavascriptInterface
         public void createVideo(String apiKey, String jsonPayload) {
+            synchronized (pollLock) {
+                activePollVideoId = "";
+                nextPollAllowedAt = 0L;
+                pollInFlight = false;
+            }
             executor.submit(() -> {
                 try {
                     String response = request("POST", "https://apihub.agnes-ai.com/v1/videos", apiKey, jsonPayload);
@@ -207,14 +248,42 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void pollVideo(String apiKey, String videoId, String model) {
+            if (videoId == null || videoId.trim().isEmpty()) return;
+
+            long now = System.currentTimeMillis();
+            synchronized (pollLock) {
+                if (!videoId.equals(activePollVideoId)) {
+                    activePollVideoId = videoId;
+                    nextPollAllowedAt = 0L;
+                    pollInFlight = false;
+                }
+                if (pollInFlight || now < nextPollAllowedAt) return;
+                pollInFlight = true;
+                nextPollAllowedAt = now + POLL_INTERVAL_MS;
+            }
+
             executor.submit(() -> {
                 try {
                     String endpoint = "https://apihub.agnes-ai.com/agnesapi?video_id=" +
                             Uri.encode(videoId) + "&model_name=" + Uri.encode(model);
                     String response = request("GET", endpoint, apiKey, null);
                     callback("window.onNativePollResponse", response);
+                } catch (ApiException e) {
+                    if (e.code == 429) {
+                        long delay = Math.max(POLL_BACKOFF_429_MS, e.retryAfterMs);
+                        synchronized (pollLock) {
+                            nextPollAllowedAt = Math.max(nextPollAllowedAt, System.currentTimeMillis() + delay);
+                        }
+                        notifyRateLimit(delay);
+                    } else {
+                        callback("window.onNativeError", e.getMessage());
+                    }
                 } catch (Exception e) {
                     callback("window.onNativeError", e.getMessage());
+                } finally {
+                    synchronized (pollLock) {
+                        pollInFlight = false;
+                    }
                 }
             });
         }
