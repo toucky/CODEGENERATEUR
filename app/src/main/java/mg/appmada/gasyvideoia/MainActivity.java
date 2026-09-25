@@ -33,6 +33,7 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 9001;
     private static final long POLL_INTERVAL_MS = 20000L;
     private static final long POLL_BACKOFF_429_MS = 60000L;
+    private static final long[] CREATE_QUEUE_RETRY_DELAYS_MS = {30000L, 60000L, 90000L, 120000L, 180000L};
 
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
@@ -42,6 +43,9 @@ public class MainActivity extends Activity {
     private long nextPollAllowedAt = 0L;
     private boolean pollInFlight = false;
     private String activePollVideoId = "";
+
+    private final Object createLock = new Object();
+    private boolean createInFlight = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,6 +181,18 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void notifyQueueBusy(long delayMs, int retryNumber, int maxRetries) {
+        long seconds = Math.max(1L, delayMs / 1000L);
+        String message = "File vidéo saturée. Nouvel essai automatique dans " + seconds + " s (" + retryNumber + "/" + maxRetries + ").";
+        runOnUiThread(() -> {
+            if (webView != null) {
+                String js = "if(window.onNativeQueueBusy){window.onNativeQueueBusy(" + JSONObject.quote(message) + ");}";
+                webView.evaluateJavascript(js, null);
+            }
+            Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+        });
+    }
+
     private String request(String method, String endpoint, String apiKey, String body) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
         conn.setRequestMethod(method);
@@ -184,7 +200,7 @@ public class MainActivity extends Activity {
         conn.setReadTimeout(180000);
         conn.setRequestProperty("Authorization", "Bearer " + apiKey);
         conn.setRequestProperty("Accept", "application/json");
-        conn.setRequestProperty("User-Agent", "GasyVideoIA/1.0.1 Android");
+        conn.setRequestProperty("User-Agent", "GasyVideoIA/1.0.2 Android");
         if (body != null) {
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
@@ -214,10 +230,12 @@ public class MainActivity extends Activity {
     private static class ApiException extends Exception {
         final int code;
         final long retryAfterMs;
+        final String responseBody;
 
         ApiException(int code, String body, String retryAfterHeader) {
             super("API " + code + " : " + trim(body, 500));
             this.code = code;
+            this.responseBody = body == null ? "" : body;
             long retryMs = 0L;
             if (retryAfterHeader != null) {
                 try {
@@ -226,22 +244,58 @@ public class MainActivity extends Activity {
             }
             this.retryAfterMs = retryMs;
         }
+
+        boolean isVideoQueueFull() {
+            String lower = responseBody.toLowerCase();
+            return code == 503 && (lower.contains("video_queue_full") || lower.contains("video queue is full"));
+        }
     }
 
     public class AndroidApi {
         @JavascriptInterface
         public void createVideo(String apiKey, String jsonPayload) {
+            synchronized (createLock) {
+                if (createInFlight) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Une création est déjà en attente.", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                createInFlight = true;
+            }
+
             synchronized (pollLock) {
                 activePollVideoId = "";
                 nextPollAllowedAt = 0L;
                 pollInFlight = false;
             }
+
             executor.submit(() -> {
                 try {
-                    String response = request("POST", "https://apihub.agnes-ai.com/v1/videos", apiKey, jsonPayload);
-                    callback("window.onNativeCreateResponse", response);
+                    int maxRetries = CREATE_QUEUE_RETRY_DELAYS_MS.length;
+                    for (int attempt = 0; ; attempt++) {
+                        try {
+                            String response = request("POST", "https://apihub.agnes-ai.com/v1/videos", apiKey, jsonPayload);
+                            callback("window.onNativeCreateResponse", response);
+                            return;
+                        } catch (ApiException e) {
+                            if (e.isVideoQueueFull() && attempt < maxRetries) {
+                                long configuredDelay = CREATE_QUEUE_RETRY_DELAYS_MS[attempt];
+                                long delay = Math.max(configuredDelay, e.retryAfterMs);
+                                notifyQueueBusy(delay, attempt + 1, maxRetries);
+                                Thread.sleep(delay);
+                                continue;
+                            }
+                            throw e;
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    callback("window.onNativeError", "Création interrompue.");
                 } catch (Exception e) {
                     callback("window.onNativeError", e.getMessage());
+                } finally {
+                    synchronized (createLock) {
+                        createInFlight = false;
+                    }
                 }
             });
         }
