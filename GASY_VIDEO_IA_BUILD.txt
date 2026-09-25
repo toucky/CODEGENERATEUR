@@ -1,0 +1,3 @@
+Gasy Video IA v1.0.0
+Android package: mg.appmada.gasyvideoia
+Build branch: build-gasy-video-ia-v1
